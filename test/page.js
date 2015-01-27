@@ -277,9 +277,15 @@ describe('page.js', function () {
 
     beforeEach(function () {
       this.page = new Page(testPage, {
-        tmpl: './build/page.hbs'
+        tmpl: './build/page.hbs',
+        helpers: {
+          helper: function (prop) {
+            return prop + '!';
+          }
+        }
       });
 
+      this.page.opts.data.prop = 'value';
       this.page.opts.data.sections = ['<h1>1</h1>', '<h2>2</h2>', '<h3>3</h3>'];
     });
 
@@ -295,6 +301,15 @@ describe('page.js', function () {
 
       this.page._render(function (err, contents) {
         assert.equal(contents, 'Custom\n<h1>1</h1>\n<h2>2</h2>\n<h3>3</h3>\n');
+        done();
+      });
+    });
+
+    it('Should utilize specified helpers.', function (done) {
+      this.page.page.tmpl = './build/page-helper.hbs';
+
+      this.page._render(function (err, contents) {
+        assert.equal(contents, 'value!');
         done();
       });
     });

@@ -116,7 +116,7 @@ describe('page.js', function () {
 
     it('Should execute callback with compiled markdown.', function (done) {
       this.page._compileSection(sectionMd, function (err, contents) {
-        assert.equal(contents, '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>');
+        assert.equal(contents, '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>');
         done();
       });
     });
@@ -175,14 +175,14 @@ describe('page.js', function () {
 
     it('Should execute callback with compiled contents', function (done) {
       this.page._buildSection('section-2.md', function (err, contents) {
-        assert.equal(contents, '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>');
+        assert.equal(contents, '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>');
         done();
       });
     });
 
     it('Should execute callback with templated and compiled contents.', function (done) {
       this.page._buildSection('section-1.md.hbs', function (err, contents) {
-        assert.equal(contents, '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>');
+        assert.equal(contents, '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>');
         done();
       });
     });
@@ -205,8 +205,8 @@ describe('page.js', function () {
     it('Should set `sections` property to `opts.data`.', function (done) {
       this.page._addSections(function (err) {
         assert.deepEqual(this.page.opts.data.sections, [
-          '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>',
-          '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>',
+          '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>',
+          '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>',
           '<h1>Title</h1>'
         ]);
         done();
@@ -374,8 +374,8 @@ describe('page.js', function () {
         var contents = fs.readFileSync('./test.html', 'utf8');
 
         var expected = '';
-        expected += '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>\n';
-        expected += '<h1><a href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>\n';
+        expected += '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>\n';
+        expected += '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>\n';
         expected += '<h1>Title</h1>\n';
 
         assert.equal(contents, expected);

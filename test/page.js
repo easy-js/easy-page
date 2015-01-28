@@ -9,7 +9,8 @@
  * ---------------------------------------------------------------------------*/
 
 // core
-var fs = require('fs');
+var fs   = require('fs');
+var path = require('path');
 
 // 3rd party
 var _      = require('easy-utils');
@@ -28,13 +29,25 @@ var sectionMix  = fs.readFileSync('./test/fixtures/build/docs/section-1.md.hbs',
 var sectionMd   = fs.readFileSync('./test/fixtures/build/docs/section-2.md', 'utf8');
 var sectionTmpl = fs.readFileSync('./test/fixtures/build/docs/section-3.hbs', 'utf8');
 
-var testPage = {
-  fileName: 'test.html',
-  sections: [
-    'section-1.md.hbs',
-    'section-2.md',
-    'section-3.hbs'
-  ]
+
+/* -----------------------------------------------------------------------------
+ * helpers
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * Create and return a new page isntance. Includes required opts.
+ */
+var createPage = function (opts) {
+  return new Page({
+    fileName: 'test.html',
+    sections: [
+      'section-1.md.hbs',
+      'section-2.md',
+      'section-3.hbs'
+    ]
+  }, _.extend({
+    root: './test/fixtures'
+  }, opts || {}));
 };
 
 
@@ -44,15 +57,6 @@ var testPage = {
 
 describe('page.js', function () {
 
-  beforeEach(function () {
-    process.chdir('./test/fixtures');
-  });
-
-  afterEach(function () {
-    process.chdir('../../');
-  });
-
-
   /* ---------------------------------------------------------------------------
    * _addPkgData()
    * -------------------------------------------------------------------------*/
@@ -60,7 +64,7 @@ describe('page.js', function () {
   describe('_addPkgData()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage);
+      this.page = createPage();
     });
 
     it('Should add `pkg` property to `opts.data`.', function (done) {
@@ -89,7 +93,7 @@ describe('page.js', function () {
   describe('_templateSection()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage, {
+      this.page = createPage({
         data: { title: 'Title' }
       });
     });
@@ -111,7 +115,7 @@ describe('page.js', function () {
   describe('_compileSection()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage);
+      this.page = createPage();
     });
 
     it('Should execute callback with compiled markdown.', function (done) {
@@ -132,7 +136,7 @@ describe('page.js', function () {
   describe('_getSection()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage, {
+      this.page = createPage({
         sections: { 'existing': 'existing section contents' }
       });
     });
@@ -161,7 +165,7 @@ describe('page.js', function () {
   describe('_buildSection()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage, {
+      this.page = createPage({
         data: { title: 'Title' }
       });
     });
@@ -197,7 +201,7 @@ describe('page.js', function () {
   describe('_addSections()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage, {
+      this.page = createPage({
         data: { title: 'Title' }
       });
     });
@@ -223,7 +227,7 @@ describe('page.js', function () {
   describe('_addOutline()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage);
+      this.page = createPage();
 
       // outline requires existing sections
       this.page.opts.data.sections = [
@@ -254,7 +258,7 @@ describe('page.js', function () {
   describe('_addData()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage);
+      this.page = createPage();
     });
 
     it('Should add `pkg`, `sections`, and `outline` properties to `opts.data`.', function (done) {
@@ -276,7 +280,7 @@ describe('page.js', function () {
   describe('_render()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage, {
+      this.page = createPage({
         tmpl: './build/page.hbs',
         helpers: {
           helper: function (prop) {
@@ -324,27 +328,27 @@ describe('page.js', function () {
   describe('_write()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage);
+      this.page = createPage();
     });
 
     it('Should write contents to `opts.dest`/`page.fileName`.', function (done) {
       this.page._write('<h1>Title</h1>', function (err) {
-        var contents = fs.readFileSync('./test.html');
+        var contents = fs.readFileSync('./test/fixtures/test.html');
         assert.equal(contents, '<h1>Title</h1>');
 
-        fs.unlinkSync('./test.html');
+        fs.unlinkSync('./test/fixtures/test.html');
         done();
       });
     });
 
     it('Should write contents to non existent `opts.dest`.', function (done) {
-      this.page.opts.dest = './docs';
+      this.page.opts.dest = path.resolve(this.page.opts.root, './docs');
 
       this.page._write('<h1>Title</h1>', function (err) {
-        var contents = fs.readFileSync('./docs/test.html');
+        var contents = fs.readFileSync('./test/fixtures/docs/test.html');
         assert.equal(contents, '<h1>Title</h1>');
 
-        rimraf.sync('./docs');
+        rimraf.sync('./test/fixtures/docs');
         done();
       });
     });
@@ -359,19 +363,19 @@ describe('page.js', function () {
   describe('create()', function () {
 
     beforeEach(function () {
-      this.page = new Page(testPage, {
+      this.page = createPage({
         data: { title: 'Title' },
         tmpl: './build/page.hbs'
       });
     });
 
     afterEach(function () {
-      fs.unlinkSync('./test.html');
+      fs.unlinkSync('./test/fixtures/test.html');
     });
 
     it('Should write rendered/compile contents to `opts.dest`/`page.fileName`.', function (done) {
       this.page.create(function (err) {
-        var contents = fs.readFileSync('./test.html', 'utf8');
+        var contents = fs.readFileSync('./test/fixtures/test.html', 'utf8');
 
         var expected = '';
         expected += '<h1><a id="title" href="#title" class="anchor" name="title"><span class="header-link"></span></a>Title</h1>\n';

@@ -2,7 +2,7 @@
   "name": "easy-page",
   "description": "Page builder used by easy-docs.",
   "author": "Jarid Margolin <jarid@firstopinion.co>",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "homepage": "https://github.com/easy-js/easy-page",
   "repository": {
     "type": "git",

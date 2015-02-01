@@ -25,9 +25,11 @@ var Page = require('../lib/page');
  * reusable
  * ---------------------------------------------------------------------------*/
 
-var sectionMix  = fs.readFileSync('./test/fixtures/build/docs/section-1.md.hbs', 'utf8');
-var sectionMd   = fs.readFileSync('./test/fixtures/build/docs/section-2.md', 'utf8');
-var sectionTmpl = fs.readFileSync('./test/fixtures/build/docs/section-3.hbs', 'utf8');
+var sectionMix   = fs.readFileSync('./test/fixtures/build/docs/section-1.md.hbs', 'utf8');
+var sectionMd    = fs.readFileSync('./test/fixtures/build/docs/section-2.md', 'utf8');
+var sectionTmpl  = fs.readFileSync('./test/fixtures/build/docs/section-3.hbs', 'utf8');
+var pageTmplPath = path.resolve(__dirname, './fixtures/build/page.hbs');
+var helpTmplPath = path.resolve(__dirname, './fixtures/build/page-helper.hbs');
 
 
 /* -----------------------------------------------------------------------------
@@ -46,7 +48,15 @@ var createPage = function (opts) {
       'section-3.hbs'
     ]
   }, _.extend({
-    root: './test/fixtures'
+    root: './test/fixtures',
+    theme: {
+      pageTmpl: pageTmplPath,
+      helpers: {
+        helper: function (prop) {
+          return prop + '!';
+        }
+      }
+    }
   }, opts || {}));
 };
 
@@ -251,15 +261,7 @@ describe('page.js', function () {
   describe('_render()', function () {
 
     beforeEach(function () {
-      this.page = createPage({
-        tmpl: './build/page.hbs',
-        helpers: {
-          helper: function (prop) {
-            return prop + '!';
-          }
-        }
-      });
-
+      this.page = createPage();
       this.page.opts.data.prop = 'value';
       this.page.opts.data.sections = ['<h1>1</h1>', '<h2>2</h2>', '<h3>3</h3>'];
     });
@@ -271,17 +273,8 @@ describe('page.js', function () {
       });
     });
 
-    it('Should use page specified tmpl over options specified tmpl.', function (done) {
-      this.page.page.tmpl = './build/page-custom.hbs';
-
-      this.page._render(function (err, contents) {
-        assert.equal(contents, 'Custom\n<h1>1</h1>\n<h2>2</h2>\n<h3>3</h3>\n');
-        done();
-      });
-    });
-
     it('Should utilize specified helpers.', function (done) {
-      this.page.page.tmpl = './build/page-helper.hbs';
+      this.page.opts.theme.pageTmpl = helpTmplPath;
 
       this.page._render(function (err, contents) {
         assert.equal(contents, 'value!');
@@ -335,8 +328,7 @@ describe('page.js', function () {
 
     beforeEach(function () {
       this.page = createPage({
-        data: { title: 'Title' },
-        tmpl: './build/page.hbs'
+        data: { title: 'Title' }
       });
     });
 
